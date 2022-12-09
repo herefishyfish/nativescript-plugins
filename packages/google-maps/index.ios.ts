@@ -1,7 +1,49 @@
-import { Color, EventData, ImageSource, Utils, View } from '@nativescript/core';
+import { Color, CoreTypes, EventData, ImageSource, Utils, View } from '@nativescript/core';
 import { isNullOrUndefined } from '@nativescript/core/utils/types';
-import { ActiveBuildingEvent, ActiveLevelEvent, CameraPositionEvent, CameraPositionStartEvent, CircleOptions, Coordinate, CoordinateBounds, GroundOverlayOptions, CircleTapEvent, PolygonTapEvent, PolylineTapEvent, GroundOverlayTapEvent, ICameraPosition, ICameraUpdate, ICircle, IGoogleMap, IGroundOverlay, IIndoorBuilding, IIndoorLevel, IMarker, InfoWindowEvent, IPatternItem, ICap, IPoi, IPolygon, IPolyline, IProjection, ITileOverlay, ITileProvider, IUISettings, IVisibleRegion, MapTapEvent, MarkerDragEvent, MarkerInfoEvent, MarkerOptions, MarkerTapEvent, PoiTapEvent, PolygonOptions, PolylineOptions, Style, TileOverlayOptions } from '.';
-import { bearingProperty, JointType, latProperty, lngProperty, MapType, MapViewBase, tiltProperty, zoomProperty } from './common';
+import {
+	ActiveBuildingEvent,
+	ActiveLevelEvent,
+	CameraPositionEvent,
+	CameraPositionStartEvent,
+	CircleOptions,
+	Coordinate,
+	CoordinateBounds,
+	GroundOverlayOptions,
+	CircleTapEvent,
+	PolygonTapEvent,
+	PolylineTapEvent,
+	GroundOverlayTapEvent,
+	ICameraPosition,
+	ICameraUpdate,
+	ICircle,
+	IGoogleMap,
+	IGroundOverlay,
+	IIndoorBuilding,
+	IIndoorLevel,
+	IMarker,
+	InfoWindowEvent,
+	IPatternItem,
+	ICap,
+	IPoi,
+	IPolygon,
+	IPolyline,
+	IProjection,
+	ITileOverlay,
+	ITileProvider,
+	IUISettings,
+	IVisibleRegion,
+	MapTapEvent,
+	MarkerDragEvent,
+	MarkerInfoEvent,
+	MarkerOptions,
+	MarkerTapEvent,
+	PoiTapEvent,
+	PolygonOptions,
+	PolylineOptions,
+	Style,
+	TileOverlayOptions,
+} from '.';
+import { bearingProperty, JointType, latProperty, lngProperty, MapType, MapViewBase, paddingProperty, tiltProperty, zoomProperty } from './common';
 import { deserialize, intoNativeCircleOptions, intoNativeGroundOverlayOptions, intoNativeMarkerOptions, intoNativePolygonOptions, intoNativePolylineOptions, serialize } from './utils';
 
 export class CameraUpdate implements ICameraUpdate {
@@ -493,6 +535,7 @@ export class MapView extends MapViewBase {
 				tilt: this.tilt,
 				zoom: this.zoom,
 			});
+			this._updatePadding(this.nativeView, this.padding);
 
 			this.notify({
 				eventName: 'ready',
@@ -541,6 +584,52 @@ export class MapView extends MapViewBase {
 				bearing: value,
 			});
 		}
+	}
+
+	[paddingProperty.setNative](value) {
+		if (this.nativeView) {
+			this._updatePadding(this.nativeView, value);
+		}
+	}
+
+	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.nativeView.padding;
+		this._updatePadding(this.nativeView, {
+			top: value,
+			right: padding.right,
+			bottom: padding.bottom,
+			left: padding.left,
+		});
+	}
+
+	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.nativeView.padding;
+		this._updatePadding(this.nativeView, {
+			top: padding.top,
+			right: value,
+			bottom: padding.bottom,
+			left: padding.left,
+		});
+	}
+
+	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.nativeView.padding;
+		this._updatePadding(this.nativeView, {
+			top: padding.top,
+			right: padding.right,
+			bottom: value,
+			left: padding.left,
+		});
+	}
+
+	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.nativeView.padding;
+		this._updatePadding(this.nativeView, {
+			top: padding.top,
+			right: padding.right,
+			bottom: padding.bottom,
+			left: value,
+		});
 	}
 
 	_updateCamera(
@@ -592,6 +681,12 @@ export class MapView extends MapViewBase {
 			if (changed) {
 				googleMap.cameraPosition = position;
 			}
+		}
+	}
+
+	_updatePadding(map, padding) {
+		if (padding) {
+			map.padding = UIEdgeInsetsFromString(`{${padding.top || 0}, ${padding.right || 0}, ${padding.bottom || 0}, ${padding.left || 0}}`);
 		}
 	}
 

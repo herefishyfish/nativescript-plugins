@@ -1,4 +1,4 @@
-import { Application, Color, EventData, ImageSource, Utils, View } from '@nativescript/core';
+import { Application, Color, CoreTypes, EventData, ImageSource, Utils, View } from '@nativescript/core';
 import { isNullOrUndefined } from '@nativescript/core/utils/types';
 import {
 	ActiveBuildingEvent,
@@ -43,7 +43,7 @@ import {
 	Style,
 	TileOverlayOptions,
 } from '.';
-import { bearingProperty, JointType, latProperty, lngProperty, MapType, MapViewBase, tiltProperty, zoomProperty } from './common';
+import { bearingProperty, JointType, latProperty, lngProperty, mapPaddingBottomProperty, mapPaddingLeftProperty, mapPaddingRightProperty, mapPaddingTopProperty, MapType, MapViewBase, mapPaddingProperty, tiltProperty, zoomProperty } from './common';
 
 import { intoNativeMarkerOptions, intoNativeCircleOptions, intoNativePolygonOptions, intoNativeGroundOverlayOptions, intoNativePolylineOptions, hueFromColor, intoNativeJointType, toJointType, intoNativeTileOverlayOptions, deserialize, serialize } from './utils';
 
@@ -364,6 +364,8 @@ export class MapView extends MapViewBase {
 						tilt: owner.tilt,
 						zoom: owner.zoom,
 					});
+
+					owner._updatePadding(map, owner.padding);
 				}
 
 				ref.get?.().notify?.({
@@ -426,6 +428,60 @@ export class MapView extends MapViewBase {
 		}
 	}
 
+	[mapPaddingProperty.setNative](value) {
+		if (this._map) {
+			this._updatePadding(this._map, value);
+		}
+	}
+
+	[mapPaddingTopProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.padding;
+		if (this._map) {
+			this._updatePadding(this._map, {
+				top: value,
+				right: padding.right,
+				bottom: padding.bottom,
+				left: padding.left,
+			});
+		}
+	}
+
+	[mapPaddingRightProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.padding;
+		if (this._map) {
+			this._updatePadding(this._map, {
+				top: padding.top,
+				right: value,
+				bottom: padding.bottom,
+				left: padding.left,
+			});
+		}
+	}
+
+	[mapPaddingBottomProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.padding;
+		if (this._map) {
+			this._updatePadding(this._map, {
+				top: padding.top,
+				right: padding.right,
+				bottom: value,
+				left: padding.left,
+			});
+		}
+	}
+
+	[mapPaddingLeftProperty.setNative](value: CoreTypes.LengthType) {
+		const padding = this.padding;
+		if (this._map) {
+			this._updatePadding(this._map, {
+				top: padding.top,
+				right: padding.right,
+				bottom: padding.bottom,
+				left: value,
+			});
+		}
+	}
+
 	_updateCamera(
 		map,
 		owner: {
@@ -475,6 +531,59 @@ export class MapView extends MapViewBase {
 			if (changed) {
 				googleMap.cameraPosition = position;
 			}
+		}
+	}
+
+	_updatePadding(map, padding) {
+		if (padding) {
+			if (typeof padding === 'string') {
+				const arr = padding.split(/[ ,]+/).map((s) => parseInt(s));
+
+				let top: number;
+				let right: number;
+				let bottom: number;
+				let left: number;
+
+				if (arr.length === 1) {
+					top = arr[0];
+					right = arr[0];
+					bottom = arr[0];
+					left = arr[0];
+				} else if (arr.length === 2) {
+					top = arr[0];
+					bottom = arr[0];
+					right = arr[1];
+					left = arr[1];
+				} else if (arr.length === 3) {
+					top = arr[0];
+					right = arr[1];
+					left = arr[1];
+					bottom = arr[2];
+				} else if (arr.length === 4) {
+					top = arr[0];
+					right = arr[1];
+					bottom = arr[2];
+					left = arr[3];
+				} else {
+					throw new Error('Expected 1, 2, 3 or 4 parameters. Actual: ' + padding);
+				}
+
+				this.padding = {
+					top: top,
+					right: right,
+					bottom: bottom,
+					left: left,
+				};
+			} else if (typeof padding === 'number') {
+				this.padding = {
+					top: padding,
+					right: padding,
+					bottom: padding,
+					left: padding,
+				};
+			}
+
+			map.setPadding(this.padding.left ?? 0, this.padding.top ?? 0, this.padding.right ?? 0, this.padding.bottom ?? 0);
 		}
 	}
 }

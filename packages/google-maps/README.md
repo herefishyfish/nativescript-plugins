@@ -227,6 +227,7 @@ function onReady(event: MapReadyEvent) {
 `minZoomLevel` | number | Minimum level of zoom
 `myLocationEnabled` | boolean | Enables "My Location"
 `trafficEnabled` | boolean | Enables traffic
+`padding` | number | Padding around the map controls
 `cameraPosition` | CameraPosition | See [Camera Position](#camera-position)
 `projection` | Projection | See [Projection](#projection)
 `uiSettings` | IUISettings | See [UI Settings](#ui-settings)

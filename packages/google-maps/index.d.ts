@@ -420,6 +420,7 @@ export class GoogleMap implements IGoogleMap {
 	addTileOverlay(options: TileOverlayOptions): TileOverlay;
 	removeTileOverlay(overlay: TileOverlay);
 	buildingsEnabled: boolean;
+	padding: number;
 	maxZoomLevel: number;
 	minZoomLevel: number;
 	myLocationEnabled: boolean;
